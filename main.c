@@ -25,19 +25,29 @@ int initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of bird
     //TODO: Initialize datastructure for data
     
    head = NULL;
+   int j = 0;
+   int row = 0; //y coordinate based on row
+
    for(int i=0; i<=n; i++)
    {
             p = malloc(sizeof(struct vogel)); //allocate memory
             p->speedX = s_speedX;
             p->speedY = s_speedY;
-            p->x = i*2;
-            p->y = 0;
+            
+            if(j * 2 >= windowX)
+            {
+                j = 0;
+                row+=2;
+            }
+            p->x = j*2;
+            p->y = row;
             p->next = NULL;
             if(head==NULL)
                 head=p;
             else
                 prev->next=p;
             prev=p;
+            j++;
    }
 
 }
@@ -83,7 +93,7 @@ int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: 
 int main(int argc, char** argv) 
 { 
     //Main setup
-   const int n = 20; //Start with 20 birds
+   const int n = 20000; //Start with 20000 birds
    init_vogels(n, DEFAULT_BIRD_SPEED_X, DEFAULT_BIRD_SPEED_Y); 
    display();
     //SDL code after here
