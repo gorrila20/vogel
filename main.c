@@ -6,8 +6,8 @@
 #include <SDL2/SDL_timer.h> 
 #define DEFAULT_BIRD_SPEED_X 1
 #define DEFAULT_BIRD_SPEED_Y 1
-const int windowX = 1000; //Default values can be overriden
-const int windowY = 1000;
+const unsigned int windowX = 1000; //Default values can be overriden
+const unsigned int windowY = 1000;
 
 struct vogel //Create data structure voor vogel
 {
@@ -18,37 +18,36 @@ struct vogel //Create data structure voor vogel
     struct vogel *next;
 };
 
-struct vogel *prev, *head, *p; //define list variables
+struct vogel* vogels; //Declare dynamically allocated array
 
 int initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of birds
 {
     //TODO: Initialize datastructure for data
-    
-   head = NULL;
-   int j = 0;
-   int row = 0; //y coordinate based on row
+    vogels = (struct vogel * ) malloc((n+1) * sizeof(struct vogel));
+    if(vogels == NULL)
+    {
+        fprintf(stderr, "malloc() failed!!!\n");
+        exit(EXIT_FAILURE);
 
-   for(int i=0; i<=n; i++)
-   {
-            p = malloc(sizeof(struct vogel)); //allocate memory
-            p->speedX = s_speedX;
-            p->speedY = s_speedY;
-            
-            if(j * 2 >= windowX)
-            {
-                j = 0;
-                row+=2;
-            }
-            p->x = j*2;
-            p->y = row;
-            p->next = NULL;
-            if(head==NULL)
-                head=p;
-            else
-                prev->next=p;
-            prev=p;
-            j++;
-   }
+    }
+    int j = 0;
+    int row = 0;
+    for(int i=0; i<=n; i++)
+    {
+        vogels[i].speedX = s_speedX;
+        vogels[i].speedY = s_speedY;
+        if(j >=windowX)
+        {
+            j = 0;
+            row++;
+        }
+        
+        vogels[i].x = j * 2;
+        vogels[i].y = row;
+        j++;
+
+    }
+    return 0; 
 
 }
 
@@ -69,19 +68,6 @@ int init_vogels(int n, int s_speedX, int s_speedY)
 }
 
 
-void display()
-{ //Display linked list debug function
-    struct vogel *tmp;
-    tmp = head;
-    while(tmp != NULL)
-    {
-        printf("X: %d Y: %d speedX: %d speedY: %d\n", tmp->x,tmp->y,tmp->speedX,tmp->speedY);
-        tmp = tmp->next;
-
-    }
-
-}
-
 int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: d_calculateSpeedVector(mobj, vobjx, mvogel)
 {
     return (massOne * v) / massTwo; //Wet behoud van impuls
@@ -93,9 +79,13 @@ int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: 
 int main(int argc, char** argv) 
 { 
     //Main setup
-   const int n = 20000; //Start with 20000 birds
+   const int n = 20000; //Start with 20 birds
    init_vogels(n, DEFAULT_BIRD_SPEED_X, DEFAULT_BIRD_SPEED_Y); 
-   display();
+    for(int i =0; i<=n; i++)
+    {
+        printf("X: %d Y: %d SpeedX: %d SpeedY: %d\n", vogels[i].x, vogels[i].y, vogels[i].speedX, vogels[i].speedY);
+
+    }
     //SDL code after here
     // retutns zero on success else non-zero 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { 
@@ -113,7 +103,6 @@ int main(int argc, char** argv)
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 
     //Creates surface to load visual data
-    SDL_Surface* surface;
     int close = 0;
     while (!close)
     {
