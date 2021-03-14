@@ -27,7 +27,7 @@ struct vogel* vogels; //Declare dynamically allocated array
 void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of birds
 {
     //TODO: Initialize datastructure for data
-    vogels = (struct vogel * ) malloc((n+1) * sizeof(struct vogel));
+    vogels = (struct vogel * ) malloc(n * sizeof(struct vogel));
     if(vogels == NULL)
     {
         fprintf(stderr, "malloc() failed!!!\n");
@@ -36,7 +36,7 @@ void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of bir
     }
     int j = 0;
     int row = 0;
-    for(int i=0; i<=n; i++)
+    for(int i=0; i<n; i++)
     {
         vogels[i].speedX = s_speedX;
         vogels[i].speedY = s_speedY;
@@ -62,7 +62,7 @@ int initialize_vogels_SDL()
 {
 
     //TODO: Initialize vogels to draw
-    fprintf(stderr, "TODO!");
+    fprintf(stderr, "TODO!\n");
 
     return 0;
 }
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
     init_vogels(n, s_speedX, s_speedY);
     
     //Main setup
-    for(int i =0; i<=n; i++)
+    for(int i =0; i<n; i++)
     {
         printf("X: %d Y: %d SpeedX: %d SpeedY: %d\n", vogels[i].x, vogels[i].y, vogels[i].speedX, vogels[i].speedY);
 
