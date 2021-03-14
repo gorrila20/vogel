@@ -5,25 +5,17 @@
 #include <SDL2/SDL_image.h> 
 #include <SDL2/SDL_timer.h> 
 #include <unistd.h>
-#include "SDL.h"
+#include "libvogel.h"
 #define DEFAULT_BIRD_SPEED_X 1
 #define DEFAULT_BIRD_SPEED_Y 1
+#define BIRD_RADIUS 4
 
 const unsigned int windowX = 1000; //Default values can be overriden
 const unsigned int windowY = 1000;
 
 int s_speedX = 1; //Standard bird x speed
 int s_speedY = 1; //Standard bird y speed
-
-struct vogel //Create data structure voor vogel
-{
-    int speedX;
-    int speedY;
-    int x; //locatie
-    int y; //locatie
-    struct vogel *next;
-};
-
+unsigned int d = 6; //Ideal distance
 struct vogel* vogels; //Declare dynamically allocated array
 
 void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of birds
@@ -42,14 +34,13 @@ void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of bir
     {
         vogels[i].speedX = s_speedX;
         vogels[i].speedY = s_speedY;
-        if(j >=windowX)
+        if(j * (d+BIRD_RADIUS) >=windowX)
         {
             j = 0;
             row++;
         }
-        
-        vogels[i].x = j * 2;
-        vogels[i].y = row;
+        vogels[i].x = j * (d+BIRD_RADIUS);
+        vogels[i].y = row * (d+BIRD_RADIUS);
         j++;
 
     }
@@ -57,7 +48,7 @@ void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of bir
 
 void usage()
 {
-    fprintf(stderr, "-n <number of birds to draw> \n-x <bird default x speed> \n-y <bird default y speed> \n-h show this message\nEXAMPLE: vogel -n 30 -x 20 -y 10\n");
+    fprintf(stderr, "-n <number of birds to draw> DEFAULT: 2500 \n-x <bird default x speed> \n-y <bird default y speed> \n-d <ideal distance between birds in pixels>\n-h show this message\nEXAMPLE: vogel -n 30 -x 20 -y 10\n");
     exit(EXIT_FAILURE);
 }
 
@@ -66,8 +57,8 @@ int init_vogels(int n, int s_speedX, int s_speedY, SDL_Window* win, SDL_Renderer
  
  //wrapper function
  initialize_vogels_data(n, s_speedX, s_speedY);
- initialize_vogels_SDL(windowX, windowY, n, win, rend);
-
+ initialize_vogels_SDL(windowX, windowY, n, win, rend, vogels);
+ return 0;
 }
 
 
@@ -82,13 +73,13 @@ int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: 
 int main(int argc, char** argv) 
 { 
     
-    int n = 20; //Default value
+    int n = 2500; //Default value
    
 
  
         int opt_index = 0; //Option index for passing arguments
 
-        while (( opt_index = getopt(argc, argv, "n:x:y:h")) != -1)
+        while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)
         {
                  switch(opt_index)
                 {
@@ -104,6 +95,9 @@ int main(int argc, char** argv)
                  case 'y':
                    s_speedY = atoi(optarg);
                    break;
+                 case 'd':
+                   d = atoi(optarg);
+                   break;
 
                 }
 
@@ -113,7 +107,7 @@ int main(int argc, char** argv)
          usage();
     
    
-    
+    printf("Initialized. Parameters given:\nvx(bird): %d, vy(bird): %d\nIdeal distance: %d\nNumber of birds: %d\n",s_speedX, s_speedY, d, n); 
     //Main setup
     
     //SDL code after here
@@ -121,7 +115,6 @@ int main(int argc, char** argv)
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { 
         printf("error initializing SDL: %s\n", SDL_GetError()); 
     } 
-   printf("INIT!\n");
    SDL_Window* win = SDL_CreateWindow("Vogel", 
                                        SDL_WINDOWPOS_CENTERED, 
                                        SDL_WINDOWPOS_CENTERED, 
@@ -134,11 +127,7 @@ int main(int argc, char** argv)
 
     init_vogels(n, s_speedX, s_speedY, win, rend);
    
-    for(int i =0; i<n; i++)
-    {
-        printf("X: %d Y: %d SpeedX: %d SpeedY: %d\n", vogels[i].x, vogels[i].y, vogels[i].speedX, vogels[i].speedY);
 
-    }
 
     //Creates surface to load visual data
     int close = 0;
