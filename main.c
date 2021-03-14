@@ -5,8 +5,10 @@
 #include <SDL2/SDL_image.h> 
 #include <SDL2/SDL_timer.h> 
 #include <unistd.h>
+#include "SDL.h"
 #define DEFAULT_BIRD_SPEED_X 1
 #define DEFAULT_BIRD_SPEED_Y 1
+
 const unsigned int windowX = 1000; //Default values can be overriden
 const unsigned int windowY = 1000;
 
@@ -58,21 +60,13 @@ void usage()
     fprintf(stderr, "-n <number of birds to draw> \n-x <bird default x speed> \n-y <bird default y speed> \n-h show this message\nEXAMPLE: vogel -n 30 -x 20 -y 10\n");
     exit(EXIT_FAILURE);
 }
-int initialize_vogels_SDL()
-{
 
-    //TODO: Initialize vogels to draw
-    fprintf(stderr, "TODO!\n");
-
-    return 0;
-}
-
-int init_vogels(int n, int s_speedX, int s_speedY)
+int init_vogels(int n, int s_speedX, int s_speedY, SDL_Window* win, SDL_Renderer* rend)
 {
  
  //wrapper function
  initialize_vogels_data(n, s_speedX, s_speedY);
- initialize_vogels_SDL();
+ initialize_vogels_SDL(windowX, windowY, n, win, rend);
 
 }
 
@@ -118,14 +112,10 @@ int main(int argc, char** argv)
         if (optind < argc)
          usage();
     
-    init_vogels(n, s_speedX, s_speedY);
+   
     
     //Main setup
-    for(int i =0; i<n; i++)
-    {
-        printf("X: %d Y: %d SpeedX: %d SpeedY: %d\n", vogels[i].x, vogels[i].y, vogels[i].speedX, vogels[i].speedY);
-
-    }
+    
     //SDL code after here
     // retutns zero on success else non-zero 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { 
@@ -141,6 +131,14 @@ int main(int argc, char** argv)
 
     //Create renderer
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
+
+    init_vogels(n, s_speedX, s_speedY, win, rend);
+   
+    for(int i =0; i<n; i++)
+    {
+        printf("X: %d Y: %d SpeedX: %d SpeedY: %d\n", vogels[i].x, vogels[i].y, vogels[i].speedX, vogels[i].speedY);
+
+    }
 
     //Creates surface to load visual data
     int close = 0;
