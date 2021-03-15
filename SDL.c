@@ -3,7 +3,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
+#include <stdbool.h>
+#define FPS 33 //Cap to 30FPS 1/Actual FPS * 1000
 #define BIRD_RADIUS 4
+
 
 struct vogel //Create data structure voor vogel
 {
@@ -14,10 +17,18 @@ struct vogel //Create data structure voor vogel
     struct vogel *next;
 };
 
+struct cameraType{
+	int x;
+	int y;	
+	bool c_auto; //Boolean whether the camera automoves to the middle bird
+} camera;
 
-int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Window* win, SDL_Renderer* rend, struct vogel* vogels)
+
+int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, struct vogel* vogels)
 {
-    
+    camera.x = 0;
+	camera.y = 0;
+	
     SDL_SetRenderDrawColor(rend, 0, 0, 0, 0);
 
     SDL_RenderClear(rend);  
@@ -36,3 +47,42 @@ int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Window* win, SDL_
     SDL_RenderPresent(rend);
     return 0;
 }
+
+void updateBirds(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels)
+{
+	SDL_SetRenderDrawColor(rend, 0, 0, 0, 0);
+	SDL_RenderClear(rend);
+	SDL_SetRenderDrawColor(rend, 255, 0, 0, 255);
+	for(int i=0; i<n; i++)
+	{
+		for(int j=0; j<BIRD_RADIUS; j++)
+		{
+			for(int k=0; k<BIRD_RADIUS; k++)
+			{
+				SDL_RenderDrawPoint(rend, vogels[i].x+j-camera.x, vogels[i].y+k-camera.y);
+				
+			}
+			
+		}
+		
+	}
+	SDL_Delay(FPS);
+	SDL_RenderPresent(rend);
+	
+}
+void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels)
+{
+	//Cameraman is vogels[n/2]. 
+	for(int i=0; i<n; i++)
+	{
+		vogels[i].x+=vogels[i].speedX;
+		vogels[i].y+=vogels[i].speedY;
+		
+		camera.x=vogels[n/2].x;
+		camera.y=vogels[n/2].y;
+	}
+	updateBirds(windowX, windowY,n, rend, vogels);
+	
+	
+}
+

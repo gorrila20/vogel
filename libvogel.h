@@ -11,7 +11,7 @@ struct vogel //Create data structure voor vogel
 };
 
 
-int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Window* win, SDL_Renderer* rend, struct vogel* vogels); 
-
+int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels); 
+void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels);
 #endif
 

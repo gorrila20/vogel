@@ -52,12 +52,12 @@ void usage()
     exit(EXIT_FAILURE);
 }
 
-int init_vogels(int n, int s_speedX, int s_speedY, SDL_Window* win, SDL_Renderer* rend)
+int init_vogels(int n, int s_speedX, int s_speedY, SDL_Renderer* rend)
 {
  
  //wrapper function
  initialize_vogels_data(n, s_speedX, s_speedY);
- initialize_vogels_SDL(windowX, windowY, n, win, rend, vogels);
+ initialize_vogels_SDL(windowX, windowY, n, rend, vogels);
  return 0;
 }
 
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     //Create renderer
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 
-    init_vogels(n, s_speedX, s_speedY, win, rend);
+    init_vogels(n, s_speedX, s_speedY, rend);
    
 
 
@@ -134,11 +134,22 @@ int main(int argc, char** argv)
     while (!close)
     {
         SDL_Event event;
-
+		birdloop_SDL(windowX, windowY, n, rend, vogels);
         while (SDL_PollEvent(&event)) {
             switch (event.type)
             {
-                case SDL_QUIT:
+                case SDL_KEYDOWN:
+					switch(event.key.keysym.sym)
+					{
+					    	  case SDLK_LEFT:  printf("Left pressed!\n"); break;
+					          case SDLK_RIGHT: printf("Right pressed!\n"); break;
+					          case SDLK_UP:    printf("Up pressed!\n"); break;
+					          case SDLK_DOWN:  printf("Down pressed!\n"); break;
+						
+					}
+					break;
+				
+				case SDL_QUIT:
                     close = 1;
                     break;
 
