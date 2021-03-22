@@ -21,13 +21,11 @@ struct cameraType{
 	int x;
 	int y;	
 	bool c_auto; //Boolean whether the camera automoves to the middle bird
-} camera;
+};
 
 
 int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, struct vogel* vogels)
 {
-    camera.x = 0;
-	camera.y = 0;
 	
     SDL_SetRenderDrawColor(rend, 0, 0, 0, 0);
 
@@ -48,7 +46,7 @@ int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, 
     return 0;
 }
 
-void updateBirds(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels)
+void updateBirds(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera)
 {
 	SDL_SetRenderDrawColor(rend, 0, 0, 0, 0);
 	SDL_RenderClear(rend);
@@ -70,18 +68,20 @@ void updateBirds(int windowX, int windowY, int n, SDL_Renderer* rend, struct vog
 	SDL_RenderPresent(rend);
 	
 }
-void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels)
+void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera)
 {
 	//Cameraman is vogels[n/2]. 
 	for(int i=0; i<n; i++)
 	{
 		vogels[i].x+=vogels[i].speedX;
 		vogels[i].y+=vogels[i].speedY;
-		
-		camera.x=vogels[n/2].x;
-		camera.y=vogels[n/2].y;
+        if(camera.c_auto == true)
+        {
+		    camera.x=vogels[n/2].x;
+		    camera.y=vogels[n/2].y;
+        }
 	}
-	updateBirds(windowX, windowY,n, rend, vogels);
+	updateBirds(windowX, windowY,n, rend, vogels, camera);
 	
 	
 }

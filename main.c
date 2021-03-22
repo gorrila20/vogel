@@ -5,10 +5,13 @@
 #include <SDL2/SDL_image.h> 
 #include <SDL2/SDL_timer.h> 
 #include <unistd.h>
+#include <stdbool.h>
 #include "libvogel.h"
 #define DEFAULT_BIRD_SPEED_X 1
 #define DEFAULT_BIRD_SPEED_Y 1
 #define BIRD_RADIUS 4
+
+#define CAMERA_SPEED 10
 
 const unsigned int windowX = 1000; //Default values can be overriden
 const unsigned int windowY = 1000;
@@ -52,12 +55,12 @@ void usage()
     exit(EXIT_FAILURE);
 }
 
-int init_vogels(int n, int s_speedX, int s_speedY, SDL_Renderer* rend)
+int init_vogels(int n, int s_speedX, int s_speedY, SDL_Renderer* rend, struct cameraType camera)
 {
  
  //wrapper function
  initialize_vogels_data(n, s_speedX, s_speedY);
- initialize_vogels_SDL(windowX, windowY, n, rend, vogels);
+ initialize_vogels_SDL(windowX, windowY, n, rend, vogels, camera);
  return 0;
 }
 
@@ -124,8 +127,11 @@ int main(int argc, char** argv)
 
     //Create renderer
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
-
-    init_vogels(n, s_speedX, s_speedY, rend);
+    struct cameraType camera;
+    camera.x = 0;
+    camera.y = 0;
+    camera.c_auto = true;
+    init_vogels(n, s_speedX, s_speedY, rend, camera);
    
 
 
@@ -134,19 +140,31 @@ int main(int argc, char** argv)
     while (!close)
     {
         SDL_Event event;
-		birdloop_SDL(windowX, windowY, n, rend, vogels);
-        while (SDL_PollEvent(&event)) {
+        birdloop_SDL(windowX, windowY, n, rend, vogels, camera); 
+		while (SDL_PollEvent(&event)) {
+                       
             switch (event.type)
             {
                 case SDL_KEYDOWN:
-					switch(event.key.keysym.sym)
-					{
-					    	  case SDLK_LEFT:  printf("Left pressed!\n"); break;
-					          case SDLK_RIGHT: printf("Right pressed!\n"); break;
-					          case SDLK_UP:    printf("Up pressed!\n"); break;
-					          case SDLK_DOWN:  printf("Down pressed!\n"); break;
-						
-					}
+                    if(camera.c_auto == true)
+                    {
+                        if(event.key.keysym.sym == SDLK_SPACE)
+                        {
+                            camera.c_auto = false;
+                            
+                        }    
+                    }
+                    else if(camera.c_auto == false)
+                    {
+                        switch(event.key.keysym.sym)
+					    {
+					    	  case SDLK_LEFT:  camera.x-=CAMERA_SPEED; break;
+					          case SDLK_RIGHT: camera.x+=CAMERA_SPEED; break;
+					          case SDLK_UP:    camera.y-=CAMERA_SPEED; break;
+					          case SDLK_DOWN:  camera.y+=CAMERA_SPEED; break;
+					          case SDLK_SPACE: camera.c_auto = true; break;	
+					    }
+                    }
 					break;
 				
 				case SDL_QUIT:
