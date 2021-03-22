@@ -4,12 +4,12 @@
 CC := clang
 
 # set the compiler flags
-CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image $(shell sdl2-config --cflags) -Wall -O
+CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image $(shell sdl2-config --cflags) -Wall -O  
 # add header files here
 HDRS :=
 
 # add source files here
-SRCS := main.c SDL.c
+SRCS := main.c SDL.c file.c ini.c
 
 # generate names of object files
 OBJS := $(SRCS:.c=.o)

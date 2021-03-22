@@ -1,5 +1,5 @@
-#ifndef SDL_H
-#define SDL_H
+#ifndef LIBVOGEL_H
+#define LIBVOGEL_H
 #include <SDL2/SDL.h>
 struct vogel //Create data structure voor vogel
 {
@@ -16,7 +16,14 @@ struct cameraType{
     bool c_auto;
 };
 
+struct collision{ //Type of collision seperate from object
+    int mass; //Mass
+    int speed; //Speed
+    int radius; //Radius
+};
 int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera); 
 void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera);
+
+void cfg_init(struct collision* collisions );
 #endif
 
