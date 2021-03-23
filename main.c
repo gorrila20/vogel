@@ -10,7 +10,7 @@
 #define DEFAULT_BIRD_SPEED_X 1
 #define DEFAULT_BIRD_SPEED_Y 1
 #define BIRD_RADIUS 4
-
+#define MAXDISRUPTIONS 15
 #define CAMERA_SPEED 10
 
 const unsigned int windowX = 1000; //Default values can be overriden
@@ -72,7 +72,11 @@ int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: 
 
 }
 
+void displayInfo(struct collision* collisions, int selected)
+{
+    printf("Name: %s \n Mass: %d \n Radius: %d \n Speed; %d \n", collisions[selected].name, collisions[selected].mass, collisions[selected].radius,collisions[selected].speed);
 
+}
 int main(int argc, char** argv) 
 { 
     
@@ -81,11 +85,7 @@ int main(int argc, char** argv)
         struct collision* collisions = NULL;
         collisions = cfg_init(collisions);
         size_t l_collisions = sizeof(struct collision)/sizeof(struct collision); 
-        for(int i=0; i<=l_collisions; i++)
-        {
-            printf("Name: %s\n Mass: %d\n Radius: %d\n Speed: %d\n", collisions[i].name, collisions[i].mass, collisions[i].radius, collisions[i].speed);
 
-        }
         int opt_index = 0; //Option index for passing arguments
 
         while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)
@@ -143,6 +143,11 @@ int main(int argc, char** argv)
 
     //Creates surface to load visual data
     int close = 0;
+    int selected = 0;
+    int mouseX = 0;
+    int mouseY = 0;
+    struct object objects[MAXDISRUPTIONS];
+    displayInfo(collisions, selected);
     while (!close)
     {
         SDL_Event event;
@@ -169,10 +174,46 @@ int main(int argc, char** argv)
 					          case SDLK_UP:    camera.y-=CAMERA_SPEED; break;
 					          case SDLK_DOWN:  camera.y+=CAMERA_SPEED; break;
 					          case SDLK_SPACE: camera.c_auto = true; break;	
-					    }
+                       }
+                    }
+                    switch(event.key.keysym.sym)
+                    {
+                              case SDLK_j: 
+                              if(selected<l_collisions)
+                                selected++;
+                              else
+                                selected = 0;
+
+                              displayInfo(collisions, selected);
+                              break;
+                              case SDLK_k: 
+                              if(selected<=0)
+                                selected = l_collisions;
+                              else
+                                selected--;
+                              
+                              displayInfo(collisions, selected);
+                              break;
+                              case SDLK_q:
+                                close = 1;
+                                break;
                     }
 					break;
-				
+                case SDL_MOUSEBUTTONDOWN:
+                    switch(event.button.button)
+                    {
+                        case SDL_BUTTON_LEFT:
+                        break;
+
+                        case SDL_BUTTON_RIGHT:
+                        break;
+
+                    }
+                break;
+			    case SDL_MOUSEMOTION:
+                mouseX = event.motion.x; //Get mouseX
+                mouseY = event.motion.y; //Get mouseY
+                break;
 				case SDL_QUIT:
                     close = 1;
                     break;

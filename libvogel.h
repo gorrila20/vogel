@@ -7,7 +7,6 @@ struct vogel //Create data structure voor vogel
     int speedY;
     int x; //locatie
     int y; //locatie
-    struct vogel *next;
 };
 
 struct cameraType{
@@ -23,6 +22,17 @@ struct collision
     int speed; //Speed
     int radius; //Radius
 };
+
+struct object
+{
+    int x;
+    int y;
+    int mass;
+    int radius;
+    int speedX;
+    int speedY;
+};
+
 int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera); 
 void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera);
 

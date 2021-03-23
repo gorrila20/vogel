@@ -14,7 +14,6 @@ struct vogel //Create data structure voor vogel
     int speedY;
     int x; //locatie
     int y; //locatie
-    struct vogel *next;
 };
 
 struct cameraType{
