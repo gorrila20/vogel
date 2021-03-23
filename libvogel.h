@@ -16,7 +16,9 @@ struct cameraType{
     bool c_auto;
 };
 
-struct collision{ //Type of collision seperate from object
+struct collision
+{ //Type of collision seperate from object
+    char* name;
     int mass; //Mass
     int speed; //Speed
     int radius; //Radius
@@ -24,6 +26,6 @@ struct collision{ //Type of collision seperate from object
 int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera); 
 void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera);
 
-void cfg_init(struct collision* collisions );
+struct collision* cfg_init(struct collision* collisions );
 #endif
 

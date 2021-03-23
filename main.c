@@ -79,7 +79,9 @@ int main(int argc, char** argv)
     int n = 2500; //Default value
    
         struct collision* collisions = NULL;
-        cfg_init(collisions); 
+        collisions = cfg_init(collisions);
+        printf("DDD\n");
+        printf("mass: %d\n", collisions[0].mass);
         int opt_index = 0; //Option index for passing arguments
 
         while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)
