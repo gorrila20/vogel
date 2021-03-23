@@ -76,12 +76,16 @@ int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: 
 int main(int argc, char** argv) 
 { 
     
-    int n = 2500; //Default value
+        int n = 2500; //Default value
    
         struct collision* collisions = NULL;
         collisions = cfg_init(collisions);
-        printf("DDD\n");
-        printf("mass: %d\n", collisions[0].mass);
+        size_t l_collisions = sizeof(struct collision)/sizeof(struct collision); 
+        for(int i=0; i<=l_collisions; i++)
+        {
+            printf("Name: %s\n Mass: %d\n Radius: %d\n Speed: %d\n", collisions[i].name, collisions[i].mass, collisions[i].radius, collisions[i].speed);
+
+        }
         int opt_index = 0; //Option index for passing arguments
 
         while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)

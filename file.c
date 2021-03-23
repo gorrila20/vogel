@@ -64,7 +64,7 @@ struct collision* cfg_init(struct collision* collisions)
    char INI_PATH[PATH_MAX] = "/collisions/"; //Relative path
    char cwd[PATH_MAX];
     if(getcwd(cwd, sizeof(cwd)) != NULL){
-        printf("initializing config files...\n");
+        printf("initializing config files...");
     }
     else{
         fprintf(stderr,"getcwd() error\n");
@@ -84,17 +84,20 @@ struct collision* cfg_init(struct collision* collisions)
         //Allocate space for one more declaration
         char* path = NULL;
         char* combined_path = NULL;
-        while(ep = readdir(dp))
+        while((ep = readdir(dp)))
+            counter++; //Count how many files
+        
+        dp = NULL; //Reset dp
+        dp = opendir(cwd); //Reset complete
+        collisions = (struct collision *) malloc(sizeof(struct collision)*(counter-2)); //Malloc enough size to store everything
+        counter = 0;
+        while((ep = readdir(dp)))
         {
            
-           printf("AAA\n"); 
             if(counter>=2)
             {
-                collisions = (struct collision *) malloc(sizeof(struct collision));  
-                printf("BBB\n");
                 removeSuffix(&cur_collision.name, ep->d_name);
                 path = strdup(ep->d_name);
-                printf("%d\n", j);
                 if((combined_path = malloc(strlen(cwd))+strlen(path)+1) != NULL)
                 {
                     combined_path[0] = '\0';
@@ -111,21 +114,20 @@ struct collision* cfg_init(struct collision* collisions)
                     fprintf(stderr, "Cant load ini files\n");
                     exit(EXIT_FAILURE);
                 }
-                printf("%s %d %d %d\n",cur_collision.name, cur_collision.speed, cur_collision.mass, cur_collision.radius);
                 collisions[j].name = strdup(cur_collision.name);
                 collisions[j].speed = cur_collision.speed;
                 collisions[j].mass = cur_collision.mass;
                 collisions[j].radius = cur_collision.radius;
-                printf("(!collisions) %s %d %d  %d", collisions[j].name, collisions[j].speed, collisions[j].radius, collisions[j].mass);
-                return collisions;
                 j++;
                
             }
             counter++;
         }
-        //free(combined_path);            
+        
+        printf("done\n");
+        free(&combined_path);            
         (void) closedir(dp);
-
+        return collisions;
    }
    else 
     perror("Directory not found");
