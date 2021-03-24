@@ -84,8 +84,12 @@ int main(int argc, char** argv)
    
         struct collision* collisions = NULL;
         collisions = cfg_init(collisions);
-        size_t l_collisions = sizeof(struct collision)/sizeof(struct collision); 
+        int l_collisions = 0;
+        for(int i=0; collisions[i].name !=NULL; i++)
+            l_collisions++; //Count how many collision types there are
+            
 
+        
         int opt_index = 0; //Option index for passing arguments
 
         while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)
@@ -179,7 +183,7 @@ int main(int argc, char** argv)
                     switch(event.key.keysym.sym)
                     {
                               case SDLK_j: 
-                              if(selected<l_collisions)
+                              if(selected<l_collisions-1)
                                 selected++;
                               else
                                 selected = 0;
@@ -188,7 +192,7 @@ int main(int argc, char** argv)
                               break;
                               case SDLK_k: 
                               if(selected<=0)
-                                selected = l_collisions;
+                                selected = l_collisions -1;
                               else
                                 selected--;
                               
@@ -203,6 +207,7 @@ int main(int argc, char** argv)
                     switch(event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
+                        printf("TODO: Create object\n");
                         break;
 
                         case SDL_BUTTON_RIGHT:
