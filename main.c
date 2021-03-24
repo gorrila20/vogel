@@ -11,7 +11,7 @@
 #define DEFAULT_BIRD_SPEED_Y 1
 #define BIRD_RADIUS 4
 #define MAXDISRUPTIONS 15
-#define CAMERA_SPEED 10
+#define CAMERAFACTOR 5 //Be 5 times as fast as birds
 
 const unsigned int windowX = 1000; //Default values can be overriden
 const unsigned int windowY = 1000;
@@ -51,7 +51,7 @@ void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of bir
 
 void usage()
 {
-    fprintf(stderr, "-n <number of birds to draw> DEFAULT: 2500 \n-x <bird default x speed> \n-y <bird default y speed> \n-d <ideal distance between birds in pixels>\n-h show this message\nEXAMPLE: vogel -n 30 -x 20 -y 10\n");
+    fprintf(stderr, "-n <number of birds to draw> DEFAULT: 2500 \n-x <bird default x speed> \n-y <bird default y speed> \n-d <ideal distance between birds in pixels>\n-m define mass of bird -h show this message\nEXAMPLE: vogel -n 30 -x 20 -y 10\n");
     exit(EXIT_FAILURE);
 }
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 { 
     
         int n = 2500; //Default value
-   
+        int bird_mass = 5; //Default value
         struct collision* collisions = NULL;
         collisions = cfg_init(collisions);
         int l_collisions = 0;
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
         
         int opt_index = 0; //Option index for passing arguments
 
-        while (( opt_index = getopt(argc, argv, "n:x:y:hd:")) != -1)
+        while (( opt_index = getopt(argc, argv, "n:x:y:hd:m:")) != -1)
         {
                  switch(opt_index)
                 {
@@ -111,6 +111,9 @@ int main(int argc, char** argv)
                  case 'd':
                    d = atoi(optarg);
                    break;
+                 case 'm':
+                   bird_mass = atoi(optarg);
+                   break;
 
                 }
 
@@ -120,7 +123,7 @@ int main(int argc, char** argv)
          usage();
     
    
-    printf("Initialized. Parameters given:\nvx(bird): %d, vy(bird): %d\nIdeal distance: %d\nNumber of birds: %d\n",s_speedX, s_speedY, d, n); 
+    printf("Initialized. Parameters given:\nvx(bird): %d, vy(bird): %d\nIdeal distance: %d\nNumber of birds: %d\nBird Mass: %d\n",s_speedX, s_speedY, d, n, bird_mass); 
     //Main setup
     
     //SDL code after here
@@ -144,8 +147,7 @@ int main(int argc, char** argv)
     init_vogels(n, s_speedX, s_speedY, rend, camera);
    
 
-
-    //Creates surface to load visual data
+    const signed int CAMERA_SPEED = sqrt((s_speedX*s_speedX) + (s_speedY * s_speedY))*CAMERAFACTOR;
     int close = 0;
     int selected = 0;
     int mouseX = 0;
