@@ -152,7 +152,8 @@ int main(int argc, char** argv)
     int selected = 0;
     int mouseX = 0;
     int mouseY = 0;
-    struct object objects[MAXDISRUPTIONS];
+    struct object* objects;
+    objects = (struct object*) malloc(sizeof(struct object)); //Ensure there is space for at least one object
     displayInfo(collisions, selected);
     while (!close)
     {
@@ -209,7 +210,7 @@ int main(int argc, char** argv)
                     switch(event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
-                        printf("TODO: Create object\n");
+                        objects = createObject(objects, collisions, mouseX, mouseY, selected, windowX, windowY, n, vogels);
                         break;
 
                         case SDL_BUTTON_RIGHT:
@@ -232,7 +233,9 @@ int main(int argc, char** argv)
 
     }
          
-    free(vogels);  
+    free(vogels); 
+    free(objects);
+    free(collisions);
     return 0; 
 }
 
