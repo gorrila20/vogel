@@ -23,35 +23,33 @@ struct vogel
     int x;
     int y;
 };
-struct object* createObject(struct object* objects, struct collision* collisions, int mouseX, int mouseY, int selected, const int windowX, const int windowY, int n, struct vogel* vogels )
+struct object* createObject(struct object* objects, struct collision* collisions, int mouseX, int mouseY, int selected, const int windowX, const int windowY, int n, struct vogel* vogels, int allocated_objects)
 {
-    if((objects = realloc(objects, sizeof(struct object)) == NULL))
+    objects = (struct object*) realloc(objects, sizeof(struct object)*allocated_objects);
+    if (objects == NULL)
     {
-        fprintf(stderr, "realloc() error\n");
+        free(objects);
+        objects = NULL;
+        fprintf(stderr, "realloc() error");
         exit(EXIT_FAILURE);
     }
-    int len_objects = 0;
-    for(int i=0; objects[i].x!=NULL; i++)
-    {
-        len_objects++;
-    }
-    
-    objects[len_objects-1].mass = collisions[selected].mass;
-    objects[len_objects].radius = collisions[selected].radius;
+    printf("allocated_objects: %d\n", allocated_objects);    
+    objects[allocated_objects-1].mass = collisions[selected].mass;
+    objects[allocated_objects-1].radius = collisions[selected].radius;
     
     if(mouseX > (windowX/2))
     {
-        objects[len_objects].x=vogels[n].x+5;
-        objects[len_objects].y = mouseY;
-        objects[len_objects].speedX = -collisions[selected].speed;
-        objects[len_objects].speedY = 0;
+        objects[allocated_objects-1].x=vogels[n].x+5;
+        objects[allocated_objects-1].y = mouseY;
+        objects[allocated_objects-1].speedX = -collisions[selected].speed;
+        objects[allocated_objects-1].speedY = 0;
     }
     else if(mouseX < (windowX/2))
     {
-        objects[len_objects].x=vogels[0].x-5;
-        objects[len_objects].y = mouseY;
-        objects[len_objects].speedX = collisions[selected].speed;
-        objects[len_objects].speedY = 0;
+        objects[allocated_objects-1].x=vogels[0].x-5;
+        objects[allocated_objects-1].y = mouseY;
+        objects[allocated_objects-1].speedX = collisions[selected].speed;
+        objects[allocated_objects-1].speedY = 0;
     }
 
     return objects;

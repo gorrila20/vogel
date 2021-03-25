@@ -153,6 +153,8 @@ int main(int argc, char** argv)
     int mouseX = 0;
     int mouseY = 0;
     struct object* objects;
+    int allocated_objects = 0; //How many disruptions are allocated
+
     objects = (struct object*) malloc(sizeof(struct object)); //Ensure there is space for at least one object
     displayInfo(collisions, selected);
     while (!close)
@@ -210,7 +212,12 @@ int main(int argc, char** argv)
                     switch(event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
-                        objects = createObject(objects, collisions, mouseX, mouseY, selected, windowX, windowY, n, vogels);
+                        allocated_objects++;
+                        objects = createObject(objects, collisions, mouseX, mouseY, selected, windowX, windowY, n, vogels, allocated_objects);
+                        for(int i=0; i<allocated_objects; i++)
+                        {
+                            printf("object.x: %d object.y: %d\n", objects[i].x, objects[i].y);
+                        }
                         break;
 
                         case SDL_BUTTON_RIGHT:

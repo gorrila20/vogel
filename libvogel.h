@@ -37,6 +37,6 @@ int initialize_vogels_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, s
 void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera);
 
 struct collision* cfg_init(struct collision* collisions );
-struct object* createObject(struct object* objects, struct collision* collisions, int mouseX, int mouseY, int selected, const int windowX, const int windowY, int n, struct vogel* vogels);
+struct object* createObject(struct object* objects, struct collision* collisions, int mouseX, int mouseY, int selected, const int windowX, const int windowY, int n, struct vogel* vogels, int allocated_objects);
 #endif
 
