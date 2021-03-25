@@ -38,5 +38,6 @@ void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vo
 
 struct collision* cfg_init(struct collision* collisions );
 struct object* createObject(struct object* objects, struct collision* collisions, int mouseX, int mouseY, int selected, const int windowX, const int windowY, int allocated_objects, struct cameraType camera);
+struct object* deleteObject(struct object* objects, int allocated_objects);
 #endif
 

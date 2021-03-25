@@ -63,7 +63,33 @@ struct object* createObject(struct object* objects, struct collision* collisions
     return objects;
     
 }
+struct object* deleteObject(struct object* objects, int allocated_objects)
+{
 
+     
+    for(int i=0; i<allocated_objects; i++)
+    {
+       if(i!=0)
+       {
+        objects[i-1].mass = objects[i].mass;
+        objects[i-1].x = objects[i].x;
+        objects[i-1].y = objects[i].y;
+        objects[i-1].radius = objects[i].radius;
+        objects[i-1].speedX = objects[i].speedX;
+        objects[i-1].speedY = objects[i].speedY;
+       }
+    }
+    if(objects == NULL)
+    {
+        free(objects);
+        objects = NULL;
+        fprintf(stderr, "realloc() failed! \n");
+        exit(EXIT_FAILURE);
+
+    }
+    return objects;
+
+}
 
 
 

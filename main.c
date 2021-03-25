@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 
         
         int opt_index = 0; //Option index for passing arguments
-
+        
         while (( opt_index = getopt(argc, argv, "n:x:y:hd:m:")) != -1)
         {
                  switch(opt_index)
@@ -153,11 +153,27 @@ int main(int argc, char** argv)
     struct object* objects;
     int allocated_objects = 0; //How many disruptions are allocated
 
+
     objects = (struct object*) malloc(sizeof(struct object)); //Ensure there is space for at least one object
     displayInfo(collisions, selected);
     while (!close)
     {
         SDL_Event event;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<=allocated_objects-1; j++)
+            {
+                if(abs(vogels[i].x - objects[j].x) < objects[j].radius && abs(vogels[i].y - objects[j].y) < objects[j].radius ){ //Check for collision
+                    vogels[i].speedX = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedX);
+                    vogels[i].speedY = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedY);
+                    deleteObject(objects, allocated_objects);
+                    allocated_objects--;
+                    }
+            }
+
+        }
+
         birdloop_SDL(windowX, windowY, n, rend, vogels, camera, allocated_objects, objects); 
 		while (SDL_PollEvent(&event)) {
                        

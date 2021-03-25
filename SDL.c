@@ -101,8 +101,8 @@ void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vo
 		vogels[i].y+=vogels[i].speedY;
         if(camera.c_auto == true)
         {
-		    camera.x=vogels[n/2].x;
-		    camera.y=vogels[n/2].y;
+		    camera.x=vogels[0].x;
+		    camera.y=vogels[0].y;
         }
 	}
 
