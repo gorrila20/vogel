@@ -22,7 +22,16 @@ struct cameraType{
 	bool c_auto; //Boolean whether the camera automoves to the middle bird
 };
 
+struct object
+{
+    int x;
+    int y;
+    int mass;
+    int radius;
+    int speedX;
+    int speedY;
 
+};
 int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, struct vogel* vogels)
 {
 	
@@ -63,11 +72,27 @@ void updateBirds(int windowX, int windowY, int n, SDL_Renderer* rend, struct vog
 		}
 		
 	}
-	SDL_Delay(FPS);
-	SDL_RenderPresent(rend);
 	
 }
-void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera)
+
+void updateObjects(int windowX, int windowY, int allocated_objects, SDL_Renderer* rend, struct object* objects, struct cameraType camera)
+{
+    SDL_SetRenderDrawColor(rend, 0, 0, 255, 255);
+    for (int i=0; i<=allocated_objects-1; i++)
+    {
+        for(int j=0; j<objects[i].radius; j++)
+        {
+            for(int k=0; k<objects[i].radius; k++)
+            {
+                SDL_RenderDrawPoint(rend, objects[i].x+j-camera.x, objects[i].y+k-camera.y);
+
+            }
+
+        }
+
+    }
+}
+void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel* vogels, struct cameraType camera, int allocated_objects, struct object* objects)
 {
 	//Cameraman is vogels[n/2]. 
 	for(int i=0; i<n; i++)
@@ -80,8 +105,18 @@ void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vo
 		    camera.y=vogels[n/2].y;
         }
 	}
+
+    //Update objects
+    for(int i=0; i<=allocated_objects-1; i++)
+    {
+        objects[i].x+=objects[i].speedX;
+        objects[i].y+=objects[i].speedY;
+    }
+
 	updateBirds(windowX, windowY,n, rend, vogels, camera);
-	
+    updateObjects(windowX, windowY, allocated_objects, rend, objects, camera);
+    SDL_Delay(FPS);
+    SDL_RenderPresent(rend);
 	
 }
 

@@ -150,8 +150,6 @@ int main(int argc, char** argv)
     const signed int CAMERA_SPEED = sqrt((s_speedX*s_speedX) + (s_speedY * s_speedY))*CAMERAFACTOR;
     int close = 0;
     int selected = 0;
-    int mouseX = 0;
-    int mouseY = 0;
     struct object* objects;
     int allocated_objects = 0; //How many disruptions are allocated
 
@@ -160,7 +158,7 @@ int main(int argc, char** argv)
     while (!close)
     {
         SDL_Event event;
-        birdloop_SDL(windowX, windowY, n, rend, vogels, camera); 
+        birdloop_SDL(windowX, windowY, n, rend, vogels, camera, allocated_objects, objects); 
 		while (SDL_PollEvent(&event)) {
                        
             switch (event.type)
@@ -208,16 +206,13 @@ int main(int argc, char** argv)
                                 break;
                     }
 					break;
+				
                 case SDL_MOUSEBUTTONDOWN:
                     switch(event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
                         allocated_objects++;
-                        objects = createObject(objects, collisions, mouseX, mouseY, selected, windowX, windowY, n, vogels, allocated_objects);
-                        for(int i=0; i<allocated_objects; i++)
-                        {
-                            printf("object.x: %d object.y: %d\n", objects[i].x, objects[i].y);
-                        }
+                        objects = createObject(objects, collisions, event.motion.x, event.motion.y, selected, windowX, windowY, allocated_objects, camera);
                         break;
 
                         case SDL_BUTTON_RIGHT:
@@ -225,11 +220,7 @@ int main(int argc, char** argv)
 
                     }
                 break;
-			    case SDL_MOUSEMOTION:
-                mouseX = event.motion.x; //Get mouseX
-                mouseY = event.motion.y; //Get mouseY
-                break;
-				case SDL_QUIT:
+			 case SDL_QUIT:
                     close = 1;
                     break;
 
