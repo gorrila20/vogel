@@ -47,18 +47,20 @@ struct object* createObject(struct object* objects, struct collision* collisions
     
     if(mouseX <= (windowX/2))
     {
-        objects[allocated_objects-1].x=-20+camera.x;
+        objects[allocated_objects-1].x=mouseX+camera.x;
         objects[allocated_objects-1].y = mouseY+camera.y;
+        
         objects[allocated_objects-1].speedX = collisions[selected].speed;
         objects[allocated_objects-1].speedY = 0;
     }
     else if(mouseX > (windowX/2))
     {
-        objects[allocated_objects-1].x=windowX+camera.x+100;
+        objects[allocated_objects-1].x=mouseX+camera.x;
         objects[allocated_objects-1].y = mouseY+camera.y;
         objects[allocated_objects-1].speedX = -collisions[selected].speed;
         objects[allocated_objects-1].speedY = 0;
     }
+    
 
     return objects;
     
