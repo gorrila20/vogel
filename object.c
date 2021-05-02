@@ -20,9 +20,10 @@ struct object
 
 struct vogel
 {
-    int speedX, speedY;
-    int x;
-    int y;
+    double speedX, speedY;
+    double x;
+    double y;
+    bool disruption;
 };
 struct cameraType
 {

@@ -10,10 +10,11 @@
 
 struct vogel //Create data structure voor vogel
 {
-    int speedX;
-    int speedY;
-    int x; //locatie
-    int y; //locatie
+    double speedX;
+    double speedY;
+    double x; //locatie
+    double y; //locatie
+    bool disruption;
 };
 
 struct cameraType{
@@ -32,6 +33,8 @@ struct object
     int speedY;
 
 };
+/*
+
 int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, struct vogel* vogels)
 {
 	
@@ -45,7 +48,7 @@ int initialize_vogels_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, 
         for(int j=0; j<BIRD_RADIUS; j++)
         {
             for(int k=0; k<BIRD_RADIUS; k++)
-            {
+            {GG
             SDL_RenderDrawPoint(rend, vogels[i].x+j, vogels[i].y+k);  
             }
         }
@@ -118,5 +121,93 @@ void birdloop_SDL(int windowX, int windowY, int n, SDL_Renderer* rend, struct vo
     SDL_Delay(FPS);
     SDL_RenderPresent(rend);
 	
+}
+*/
+int initialize_vogels2_SDL(int windowX, int windowY, int n,  SDL_Renderer* rend, struct vogel vogels2[n][n])
+{
+	
+    SDL_SetRenderDrawColor(rend, 255, 0, 0, 255);
+    
+    for(int i=0; i<n; i++)
+      for (int j=0; j<n; j++)
+        for(int k=0; k<BIRD_RADIUS; k++)
+            for(int l=0; l<BIRD_RADIUS; l++)
+            {
+            SDL_RenderDrawPoint(rend, round(vogels2[i][j].x)+k, round(vogels2[i][j].y)+l);  
+            }
+        
+    
+    SDL_RenderPresent(rend);
+    return 0;
+}
+
+void updateBirds2(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel vogels2[n][n], struct cameraType camera)
+{
+    SDL_SetRenderDrawColor(rend, 255, 0, 0, 255);
+
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0; j<n; j++)
+	    {
+		
+            for(int k=0; k<BIRD_RADIUS; k++)
+		    {
+			    for(int l=0; l<BIRD_RADIUS; l++)
+			    {
+				    SDL_RenderDrawPoint(rend, vogels2[i][j].x+k-camera.x, vogels2[i][j].y+l-camera.y);
+				
+			    }
+			
+		    }
+		
+	    }
+    }
+}
+
+void updateObjects(int windowX, int windowY, int allocated_objects, SDL_Renderer* rend, struct object* objects, struct cameraType camera)
+{
+    SDL_SetRenderDrawColor(rend, 0, 0, 255, 255);
+    
+    for (int i=0; i<=allocated_objects-1; i++)
+    {
+        for(int j=0; j<objects[i].radius; j++)
+        {
+            for(int k=0; k<objects[i].radius; k++)
+            {
+                SDL_RenderDrawPoint(rend, objects[i].x+j-camera.x, objects[i].y+k-camera.y);
+
+            }
+
+        }
+
+    }
+   
+}
+
+
+void birdloop_SDL2(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel vogels2[n][n], struct cameraType camera, int allocated_objects, struct object* objects)
+{
+	
+    //Cameraman is vogels[n/2]. 
+    if(camera.c_auto == true)
+    {   
+	    camera.x=round(vogels2[0][0].x);
+		camera.y=round(vogels2[0][0].y);
+    }
+	
+
+    //Update objects
+    for(int i=0; i<=allocated_objects-1; i++)
+    {
+        objects[i].x+=objects[i].speedX;
+        objects[i].y+=objects[i].speedY;
+    }
+
+	updateBirds2(windowX, windowY,n, rend, vogels2, camera);
+    updateObjects(windowX, windowY, allocated_objects, rend, objects, camera);
+    
+    SDL_Delay(FPS);	
+    SDL_RenderPresent(rend);
+
 }
 

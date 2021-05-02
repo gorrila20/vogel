@@ -3,10 +3,12 @@
 #include <SDL2/SDL.h>
 struct vogel //Create data structure voor vogel
 {
-    int speedX;
-    int speedY;
-    int x; //locatie
-    int y; //locatie
+    double speedX;
+    double speedY;
+    double x; //locatie
+    double y; //locatie
+    //bool disruption;
+    bool disruption;
 };
 
 struct cameraType{

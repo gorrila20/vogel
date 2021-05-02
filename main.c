@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <unistd.h> //for sleep function
 #include <math.h>
 #include <limits.h>
 #include <SDL2/SDL.h> 
@@ -17,45 +18,20 @@
 
 const unsigned int windowX = 1000; //Default values can be overriden
 const unsigned int windowY = 1000;
+double s_speedX = 1; //Standard bird x speed
+double s_speedY = 1; //Standard bird y speed
+int d = 6; //Ideal distance
+int bird_mass = 5; //default value
+int n = 50; //nr of birds flying around
+//struct vogel* vogels; //Declare dynamically allocated array
 
-int s_speedX = 1; //Standard bird x speed
-int s_speedY = 1; //Standard bird y speed
-unsigned int d = 6; //Ideal distance
-struct vogel* vogels; //Declare dynamically allocated array
 unsigned int vdecel = 2;
 unsigned int nprow = 0; //Birds per row
 unsigned int t_row = 1; //Total number of rows with bridz
+  
+bool collision = false;
+int max_hulpvogels=0;
 
-void initialize_vogels_data(int n, int s_speedX, int s_speedY) //n=number of birds
-{
-    //TODO: Initialize datastructure for data
-    vogels = (struct vogel * ) malloc(n * sizeof(struct vogel));
-    if(vogels == NULL)
-    {
-        fprintf(stderr, "malloc() failed!!!\n");
-        exit(EXIT_FAILURE);
-
-    }
-    int j = 0;
-    int row = 0;
-    for(int i=0; i<n; i++)
-    {
-        vogels[i].speedX = s_speedX;
-        vogels[i].speedY = s_speedY;
-        if(j * (d+BIRD_RADIUS) >=windowX)
-        {
-            j = 0;
-            row++;
-            t_row++;
-        }
-        if(row == 0)
-            nprow++;
-        vogels[i].x = j * (d+BIRD_RADIUS);
-        vogels[i].y = row * (d+BIRD_RADIUS);
-        j++;
-
-    }
-}
 
 void usage()
 {
@@ -63,42 +39,167 @@ void usage()
     exit(EXIT_FAILURE);
 }
 
-int init_vogels(int n, int s_speedX, int s_speedY, SDL_Renderer* rend, struct cameraType camera)
-{
- 
- //wrapper function
- initialize_vogels_data(n, s_speedX, s_speedY);
- initialize_vogels_SDL(windowX, windowY, n, rend, vogels, camera);
- return 0;
-}
-
 
 int d_calculateSpeedVector(int massOne, int massTwo, int v) //Usage voor vogel: d_calculateSpeedVector(mobj, vobjx, mvogel)
 {
     return (massOne * v) / massTwo; //Wet behoud van impuls
-
-
 }
+
 
 bool isIntersect(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh)
 {
     return bx + bw > ax && by + bh > ay && ax +aw > bx && ay + ah > by;
-
 }
+
+
 void displayInfo(struct collision* collisions, int selected)
 {
     printf("Name: %s \n Mass: %d \n Radius: %d \n Speed; %d \n", collisions[selected].name, collisions[selected].mass, collisions[selected].radius,collisions[selected].speed);
 
 }
+
+
+int square(int number) //Helper function for readabillity
+{
+    return number*number;
+}
+
+
+int **fill_hulpvogels(int i, int j, struct vogel vogels2[n][n]) 
+{
+  int **h =(int **)malloc(sizeof(int *)*n);
+  int hulpvogels_gevonden = 1;
+  int huidige_hulpvogel = 2;
+  int teller1 = 0;
+  int teller2 = 0;
+
+  for (teller1=0; teller1<n; teller1++)
+      h[teller1] = (int *)malloc(sizeof(int)*n); 
+
+  for (teller1=0; teller1<n; teller1++)
+      for (teller2=0; teller2<n; teller2++)
+          h[teller1][teller2]=0;
+ 
+
+   huidige_hulpvogel = 2;
+     //maak hulpvogel matrix 
+     //matrix heeft zelfde grootte als aantal vogels
+     //positie in matrix met cijfer 1: dit is de geraakte vogel
+     //daaromheen krijgen ze cijfer 2
+     //dus elk cijfer geeft aan naar welke buurman gekeken moet worden om juiste snelheid te berekenen
+     //dus vakje met cijfer 3->kijkt naar al zijn buren. diegene die een 2 hebben als buurman zijn nodig om zijn nieuwe snelheid te bepalen
+   h[i][j]=1;
+   while (hulpvogels_gevonden<(n*n))
+       {
+       for(teller1=0; teller1<n;teller1++)
+          for (teller2=0; teller2<n;teller2++)
+             {
+                //printf("check:(%d,%d)\n", teller1, teller2);
+                if (h[teller1][teller2]==huidige_hulpvogel-1)
+                {//vul buren
+                 //printf("positie: %d,%d, misschien gevonden:%d|n", teller1, teller2, huidige_hulpvogel);
+                 if (teller2-1>=0) if (h[teller1][teller2-1]==0) {h[teller1][teller2-1]=huidige_hulpvogel; hulpvogels_gevonden++;}//noord 
+                 if (teller1+1<n) if (h[teller1+1][teller2]==0) {h[teller1+1][teller2]=huidige_hulpvogel; hulpvogels_gevonden++;} //oost   
+                 if (teller2+1<n) if (h[teller1][teller2+1]==0) {h[teller1][teller2+1]=huidige_hulpvogel; hulpvogels_gevonden++;} //zuid
+                 if (teller1-1>=0) if (h[teller1-1][teller2]==0) {h[teller1-1][teller2]=huidige_hulpvogel; hulpvogels_gevonden++;} //west      
+                 }
+             }    
+             huidige_hulpvogel++;        
+             //printf("huidige hulpvogel onderzoeken: %d, hulpvogelsgevonden: %d, \n", huidige_hulpvogel, hulpvogels_gevonden);
+          
+        }
+    max_hulpvogels = huidige_hulpvogel;    
+    return h;
+}
+
+void set_position(int i, int j, int n, struct vogel vogels2[n][n], int** hulpvogels, double t, double c)
+{
+ 
+ if(i-1>0) //indien linker vogel bestaat
+    {  
+               
+    if(round(fabs(vogels2[i][j].x - vogels2[i-1][j].x)) != d + BIRD_RADIUS) 
+       { 
+          vogels2[i][j].speedX += (c/bird_mass * ((d + BIRD_RADIUS) - (fabs(vogels2[i][j].x - vogels2[i-1][j].x)))*t);
+       }
+    }    
+ if (i+1<n)
+    {
+   if(round(fabs(vogels2[i][j].x - vogels2[i+1][j].x)) != d + BIRD_RADIUS)
+       {
+         vogels2[i][j].speedX += - (c/bird_mass * ((d + BIRD_RADIUS) - (fabs(vogels2[i][j].x - vogels2[i+1][j].x)))*t);
+       }
+    } 
+ if (j-1>0) //bekijk afstand tot noorderbuur
+    {  
+    if(round(fabs(vogels2[i][j].y - vogels2[i][j-1].y)) != d + BIRD_RADIUS)
+       {
+            vogels2[i][j].speedY += (c/bird_mass * ((d + BIRD_RADIUS) - (fabs(vogels2[i][j].y - vogels2[i][j-1].y)))*t);
+       }
+    } 
+ if (j+1<n)
+    { 
+    if(round(fabs(vogels2[i][j].y - vogels2[i][j+1].y) != d + BIRD_RADIUS))
+       {
+           vogels2[i][j].speedY += - (c/bird_mass * ((d + BIRD_RADIUS) - (fabs(vogels2[i][j].y - vogels2[i][j+1].y)))*t);
+       } 
+     }
+         
+//         printf("vogels[%d][%d].speedX: %f, vogels[%d][%d].speedY: %f, xpos: %f  ", i, j, vogels2[i][j].speedX, i, j, vogels2[i][j].speedY, vogels2[i][j].x);
+//        printf("vogels[%d][%d[).x,y  %f, %f\n", i,j, vogels2[i][j].x, vogels2[i][j].y);
+
+}
+
+
+
+// mbv hulpvogel
+ void change_position(int windowX, int windowY, int n, SDL_Renderer* rend, struct vogel vogels2[n][n], int** hulpvogels, struct cameraType camera, double t, double c)
+{  
+ 
+   if (collision)
+     for (int hulpvogel = 1; hulpvogel<max_hulpvogels; hulpvogel ++) 
+       for(int i=0; i<n; i++)
+       {
+          for(int j=0; j<n; j++)
+          {
+           if (hulpvogels[i][j] == hulpvogel)
+              { 
+              //printf("SET HULPVOGEL !!!!!!!!!![%d][%d]: HUIDIGE HULPVOGEL: %d\n", i,j, hulpvogel);
+              set_position(i,j,n, vogels2, hulpvogels, t, c);
+              }
+          }
+      }
+   else      
+
+     for(int i=0; i<n; i++)
+     {
+        for(int j=0; j<n; j++)
+        {
+ 
+ 
+          set_position(i,j,n, vogels2, hulpvogels, t, c);
+      
+        } 
+    } 
+}
+
+               
+
+
 int main(int argc, char** argv) 
 { 
     
-        int n = 2500; //Default value
+        int n = 25; //Default value
         int bird_mass = 5; //Default value
         struct collision* collisions = NULL;
         collisions = cfg_init(collisions);
         int l_collisions = 0;
-        
+        double c = 6; //Was 600 
+        double t = 0;
+        #define DT 0.01
+        //struct vogel vogels2[n][n];
+       int **hulpvogels;
+     
 
         for(int i=0; collisions[i].name !=NULL; i++)
             l_collisions++; //Count how many collision types there are
@@ -107,7 +208,7 @@ int main(int argc, char** argv)
         
         int opt_index = 0; //Option index for passing arguments
         
-        while (( opt_index = getopt(argc, argv, "n:x:y:hd:m:v:")) != -1)
+        while (( opt_index = getopt(argc, argv, "n:x:y:hd:m:v:c:")) != -1)
         {
                  switch(opt_index)
                 {
@@ -131,6 +232,10 @@ int main(int argc, char** argv)
                    break;
                  case 'v':
                    vdecel = atoi(optarg);
+                   break;
+                 case 'c':
+                   c = atof(optarg);
+                   break;
 
                 }
 
@@ -161,82 +266,141 @@ int main(int argc, char** argv)
     camera.x = 0;
     camera.y = 0;
     camera.c_auto = true;
-    init_vogels(n, s_speedX, s_speedY, rend, camera);
-    printf("Total number of rows: %d, birds per row: %d\n", t_row, nprow);
- 
+    struct vogel vogels2[n][n];
+    int i,j;
+    for (i=0; i<n; i++)
+        for (j=0; j<n; j++)
+         {
+            vogels2[i][j].speedX = s_speedX;
+            vogels2[i][j].speedY = s_speedY;
+            vogels2[i][j].x = i*(BIRD_RADIUS + d);
+            vogels2[i][j].y = j*(BIRD_RADIUS + d);
+            vogels2[i][j].disruption=false;
+        }
+   
+
+    //init_vogels(n, s_speedX, s_speedY, rend, camera);
+   // printf("Total number of rows: %d, birds per row: %d\n", t_row, nprow);
+    
+    initialize_vogels2_SDL(windowX, windowY, n, rend, vogels2, camera);
+  
 
     const unsigned int CAMERA_SPEED = sqrt((s_speedX*s_speedX) + (s_speedY * s_speedY))*CAMERAFACTOR;
     int close = 0;
     int selected = 0;
     struct object* objects;
     int allocated_objects = 0; //How many disruptions are allocated
-
+    
+    
+    
 
     objects = (struct object*) malloc(sizeof(struct object)); //Ensure there is space for at least one object
+    
     displayInfo(collisions, selected);
+
     while (!close)
     {
         SDL_Event event;
+        if (t>50*DT) 
+        {  //t mag niet te groot worden
+           if (collision) free(hulpvogels);
+           collision = false;           
+           t=0;
+           for(int i=0; i<n; i++)
+           {
+               for(int j=0; j<n; j++)
+               {
+                
+                //  halveer telkens snelheid, totdat je op oude snelheid zit
+                vogels2[i][j].speedX = vogels2[i][j].speedX / 2;
+                vogels2[i][j].speedY = vogels2[i][j].speedY / 2;
+                if (fabs(vogels2[i][j].speedX) < s_speedX) 
+                   vogels2[i][j].speedX = s_speedX; 
+                if (fabs(vogels2[i][j].speedY) < s_speedY) 
+                   vogels2[i][j].speedY = s_speedY; 
+
+
+               }
+           }
+           
+        } 
         
         for(int i=0; i<n; i++)
-        {
-            for(int j=0; j<=allocated_objects-1; j++)
-            {
-                /*if(abs(vogels[i].x - objects[j].x) <= objects[j].radius+abs(objects[j].speedX) && abs(vogels[i].y - objects[j].y) <= objects[j].radius+abs(objects[j].speedY) ){ //Check for collision
-                    vogels[i].speedX = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedX);
-                    vogels[i].speedY = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedY);
-                    deleteObject(objects, allocated_objects);
-                    allocated_objects--;
-                    }*/
-
-                    if(isIntersect(vogels[i].x, vogels[i].y, BIRD_RADIUS, BIRD_RADIUS, objects[j].x, objects[j].y, objects[j].radius, objects[j].radius))
-                    {
+          {
+          for (int j=0; j<n; j++)
+              for(int k=0; k<=allocated_objects-1; k++)
+              {
+                 if(isIntersect(vogels2[i][j].x, vogels2[i][j].y, BIRD_RADIUS, BIRD_RADIUS, objects[k].x, objects[k].y, objects[k].radius, objects[k].radius))
+                 {       
+                   vogels2[i][j].speedX = d_calculateSpeedVector(objects[k].mass, bird_mass, objects[k].speedX);
+                   vogels2[i][j].speedY = d_calculateSpeedVector(objects[k].mass, bird_mass, objects[k].speedY);
+                   vogels2[i][j].disruption = true;
+                   deleteObject(objects, allocated_objects);
+                   allocated_objects--;
                         
-                        vogels[i].speedX = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedX);
-                        vogels[i].speedY = d_calculateSpeedVector(objects[j].mass, bird_mass, objects[j].speedY);
-                        deleteObject(objects, allocated_objects);
-                        allocated_objects--;
+                    collision = true;     
+                    //printf("COLLISION: %d, %d\n", i, j);
+                    
+              
+                    hulpvogels = fill_hulpvogels(i, j, vogels2);
+                     
+                  
 
-                    }
-            }
-
+                    printf("Klaar met intersect\n");
+                      
+                  } //if is intersect 
+              
+              }
         }
-       
-        /*
-        Check for ideal distance is wrong
-        */
-       for(int i=0; i<n; i++)
+      
+        for(int i=0; i<n; i++)
         {
-            //abs(vogels1.x - vogels[2].x) - BIRD_RADIUS < d
-            for(int j=0; j<n; j++)
-            {
+              for(int j=0; j<n; j++)
+              {
+                // vogels2[i][j].x = vogels2[i][j].x + (vogels2[i][j].speedX*t);
+                //zorgt ervoor dat vogels niet kunnen worden ingehaald
+                if (i != n-1)
+                   if (vogels2[i][j].x + (vogels2[i][j].speedX*t) > vogels2[i+1][j].x)
+                    //  vogels2[i][j].x = vogels2[i+1][j].x - 1 - vogels2[i][j].speedX*t;  //zet op afstand van 1 
+                       vogels2[i][j].x = vogels2[i+1][j].x - (d + BIRD_RADIUS) - vogels2[i][j].speedX*t;  //zet vogel op ideale afstand
+                    // vogels2[i][j].x -= vogels2[i][j].speedX*t ;
+
+                     
+                if (i != 0)
+                  if (vogels2[i][j].x + (vogels2[i][j].speedX*t) < vogels2[i-1][j].x)
+                   //vogels2[i][j].x = vogels2[i-1][j].x + (1) - vogels2[i][j].speedX*t;
+                     vogels2[i][j].x = vogels2[i-1][j].x + (d + BIRD_RADIUS) - vogels2[i][j].speedX*t;
+                  //  vogels2[i][j].x -= vogels2[i][j].speedX*t;
                 
-                if(abs(vogels[j].x - vogels[i].x) - BIRD_RADIUS < d)
-                {
-                    vogels[i].speedX = vogels[j].speedX;
-                }
-                else if(abs(vogels[j].y - vogels[i].y) - BIRD_RADIUS < d)
-                {
-                    vogels[i].speedY = vogels[j].speedY;
-                }
+                vogels2[i][j].x += vogels2[i][j].speedX*t;
+               
+               
 
+               // zorgt ervoor dat vogels niet ingehaald kunnen worden
+               if (j != n-1)
+                 if (vogels2[i][j].y + (vogels2[i][j].speedY*t) > vogels2[i][j+1].y)
+                 //   vogels2[i][j].y = vogels2[i][j+1].y - (1) - vogels2[i][j].speedY*t;
+                    vogels2[i][j].y = vogels2[i][j+1].y - (d + BIRD_RADIUS) - vogels2[i][j].speedY*t;
+                //   vogels2[i][j].y -= vogels2[i][j].speedY*t;
+               if (j != 0)
+                 if (vogels2[i][j].y + (vogels2[i][j].speedY*t) < vogels2[i][j-1].y)
+                   //vogels2[i][j].y = vogels2[i][j-1].y + (1) - vogels2[i][j].speedY*t;
+                    vogels2[i][j].y = vogels2[i][j-1].y + (d + BIRD_RADIUS) - vogels2[i][j].speedY*t;
+                  // vogels2[i][j].y -=vogels2[i][j].speedY*t;
+
+
+               
+               vogels2[i][j].y += (vogels2[i][j].speedY*t);
             }
-        }
-
-        for(int i=0; i<n; i++) //Decceleration rules
-        {
-            if(vogels[i].speedX>s_speedX)
-               vogels[i].speedX -= vdecel;
-            else if(vogels[i].speedY>s_speedY)
-                vogels[i].speedY -= vdecel;
-            else if(vogels[i].speedX<s_speedX)
-                vogels[i].speedX += vdecel;
-            else if(vogels[i].speedY<s_speedY)
-                vogels[i].speedY += vdecel;
-            
-            
-        }
-        birdloop_SDL(windowX, windowY, n, rend, vogels, camera, allocated_objects, objects); 
+         }
+       
+       change_position(windowX, windowY, n, rend, vogels2, hulpvogels, camera, t, c);
+          
+       SDL_SetRenderDrawColor(rend,0,0,0,255);
+       SDL_RenderClear(rend);
+        
+ 
+        birdloop_SDL2(windowX, windowY, n, rend, vogels2, camera, allocated_objects, objects); 
 		while (SDL_PollEvent(&event)) {
                        
             switch (event.type)
@@ -305,11 +469,11 @@ int main(int argc, char** argv)
 
             }
          }
-
-
-    }
+    t += DT;
+ 
+   }
          
-    free(vogels); 
+
     free(objects);
     free(collisions);
     return 0; 

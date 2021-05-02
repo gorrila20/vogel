@@ -4,7 +4,7 @@
 CC := clang
 
 # set the compiler flags
-CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image $(shell sdl2-config --cflags) -Wall -O  
+CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image $(shell sdl2-config --cflags) -Wall -O -lm 
 # add header files here
 HDRS :=
 
